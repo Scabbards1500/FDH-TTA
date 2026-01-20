@@ -12,9 +12,9 @@ from .Fourier_Tans import FDA_get_amp_pha_tensor, FDA_target_to_source,arc_add_a
 import matplotlib.pyplot as plt
 
 torch.set_printoptions(precision=5)
-buffer_size = 30
+buffer_size = 40
 learning_rate = []
-knnsize = 1
+knnsize = 0
 
 
 def plot_learning_rate (learning_rate) :
@@ -75,53 +75,6 @@ def softmax_entropy(x: torch.Tensor) -> torch.Tensor:
     return entropy
 
 
-# @torch.enable_grad()
-# def forward_and_adapt(x, model, optimizer, memory, mse, gt):
-#     amp,pha = FDA_get_amp_pha_tensor(x) #获取x的振幅和相位
-#     style = amp # 1,3,256,256
-#
-#     memory_size = memory.get_size()
-#     pseudo_past_logits_input = None
-#
-#     diff_loss = 0
-#     if memory_size > 4:
-#         with torch.no_grad():
-#             retrieved_batches = memory.get_neighbours(style.cpu().numpy(), k=4)  # 找最接近的几个风格
-#             pseudo_past_style = retrieved_batches.cuda() # 找的近似的(1,3,256,256)
-#             pseudo_past_logits_input = arc_add_amp( style, pseudo_past_style, pha,L=0.001) #更改过去风格后的本次图片
-#             # 计算pseudo_past_style和style之间的KL散度
-#             diff_loss = F.kl_div(pseudo_past_style.log(), style, reduction='none')
-#             diff_loss = (diff_loss-torch.mean(diff_loss))
-#             # 将KL散度作为损失添加到总损失中
-#             diff_loss = torch.sum(diff_loss, dim=1) # 获取的loss
-#             len_loss= len(diff_loss[0])*len(diff_loss[0])
-#             diff_loss = diff_loss.cpu().numpy().tolist()
-#             sum_loss= sum(sum(sublist) for sublist in diff_loss[0])
-#             diff_loss = abs(sum_loss/len_loss)
-#
-#             for param_group in optimizer.param_groups:
-#                 param_group['lr'] = diff_loss * param_group['lr']
-#
-#     if pseudo_past_logits_input!= None:
-#         outputs = model(pseudo_past_logits_input)
-#     else:
-#         outputs = model(x)
-#     # outputs = model(x)
-#
-#     loss = softmax_entropy(outputs).mean(0)
-#     loss += abs(diff_loss)
-#     loss.backward()
-#     optimizer.step()
-#     optimizer.zero_grad()
-#
-#     with torch.no_grad(): #这里是把风格加入到memory中
-#         amp,pha = FDA_get_amp_pha_tensor(x)
-#         memory.push(amp.cpu().numpy(), amp.cpu().numpy())
-#
-#     #这里output要换成tensor
-#     return outputs
-
-
 
 @torch.enable_grad()
 def forward_and_adapt(x, model, optimizer, memory, mse, gt):
@@ -153,12 +106,19 @@ def forward_and_adapt(x, model, optimizer, memory, mse, gt):
                 param_group['lr'] = diff_loss * param_group['lr']
                 print("learningrate:", param_group['lr'])
 
+            # # l2
+            # diff_map = (pseudo_past_style - style) ** 2
+            # diff_map = torch.sum(diff_map, dim=1)
+            # diff_map = diff_map - diff_map.mean()
+            # diff_scalar = diff_map.mean().abs().item()
+            #
+            # for param_group in optimizer.param_groups:
+            #     param_group['lr'] *= diff_scalar
 
     if pseudo_past_logits_input!= None:
         outputs = model(pseudo_past_logits_input)
     else:
         outputs = model(x)
-    # outputs = model(x)
 
     loss = softmax_entropy(outputs).mean(0)
     loss += abs(diff_loss)

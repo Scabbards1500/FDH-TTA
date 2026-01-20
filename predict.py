@@ -74,8 +74,8 @@ def main():
     if args.method == 'memorytent':
         print("Method: memorytent")
         model = setup_memorybank(model)
-    if args.method == 'FDA_TTT':
-        print("Method: FDA_TTT")
+    if args.method == 'FDH_TTA':
+        print("Method: FDH_TTA")
         model = setup_ourmemorybank(model)
     # logging.info('Model loaded!')
     print("Model Loaded")
@@ -220,10 +220,10 @@ def setup_memorybank(model):
     return mbtt_model
 
 def setup_ourmemorybank(model):
-    model = ourmemorytent.configure_model(model)
-    params, param_names = ourmemorytent.collect_params(model)
+    model = FDAmemorytent.configure_model(model)
+    params, param_names = FDAmemorytent.collect_params(model)
     optimizer = setup_optimizer(params)
-    our_mbtt_model = ourmemorytent.Tent(model, optimizer,
+    our_mbtt_model = FDAmemorytent.Tent(model, optimizer,
                            steps=1,
                            episodic=False)
     return our_mbtt_model

@@ -20,9 +20,9 @@ from utils.data_loading import BasicDataset, CarvanaDataset
 from utils.dice_score import dice_loss
 
 from utils.prepare_dataset_ttt import *
-from utils.misc_ttt import *
+from misc_ttt import *
 from utils.test_helpers_ttt import *
-from utils.rotation_ttt import *
+from rotation_ttt import *
 
 
 
@@ -102,14 +102,14 @@ os.environ['KMP_DUPLICATE_LIB_OK']='True'
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
 from utils.test_helpers_ttt import *
-from utils.rotation_ttt import *
+from rotation_ttt import *
 
 import os
 from pathlib import Path
-from utils.misc_ttt import *
+from misc_ttt import *
 import multiprocessing
 import torch.optim as optim
-from utils.prepare_dataset_ttt import *
+from prepare_dataset_ttt import *
 
 def train_model(
         model,
